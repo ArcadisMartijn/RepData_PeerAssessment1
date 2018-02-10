@@ -5,20 +5,20 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 rawdata <- read.csv("data\\activity.csv")
 data <- rawdata[!is.na(rawdata$steps),]
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 stepCountDay <- aggregate(steps~date, data, sum)
 
 library(ggplot2)
@@ -31,40 +31,56 @@ qplot(stepCountDay$steps,
       ylab = "Count",
       col = I("white")
       )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 meanSteps <- mean(stepCountDay$steps)
 medianSteps <- median(stepCountDay$steps)
 ```
 
-The mean of the steps taken each day is: `r meanSteps`.
-And the median: `r medianSteps`.
+The mean of the steps taken each day is: 1.0766189\times 10^{4}.
+And the median: 10765.
 
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 stepAvgInt <- aggregate(steps~interval, data, mean)
 plot(stepAvgInt,
      type = "l",
      main = "Average Activity Patern",
      xlab = "5 min interval",
      ylab = "Average step count")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 maxInt <- stepAvgInt[which.max(stepAvgInt$steps),]
 ```
-The interval with the highest average number of steps is `r maxInt$interval`, 
-with `r maxInt$steps` steps on average.
+The interval with the highest average number of steps is 835, 
+with 206.1698113 steps on average.
 
 
 ## Imputing missing values
 The number of missing values is equal to:
-```{r}
+
+```r
 nrow(rawdata) - nrow(data)
+```
+
+```
+## [1] 2304
 ```
 
 To fill in those gaps, the average activity pattern is used. This pattern was 
 calculated from the filtered data. For each row where the number of steps is 
 unknown, the daily average for that interval is inserted.
 
-```{r}
+
+```r
 fulldata <- rawdata
 for (i in 1:nrow(fulldata)) {
   if (is.na(fulldata[i, 1])) {
@@ -74,7 +90,8 @@ for (i in 1:nrow(fulldata)) {
 ```
 
 Then to create a histogram and calculate the mean and median:
-```{r}
+
+```r
 stepCountDayC <- aggregate(steps~date, fulldata, sum)
 qplot(stepCountDayC$steps,
       geom="histogram",
@@ -84,21 +101,27 @@ qplot(stepCountDayC$steps,
       ylab = "Count",
       col = I("white")
       )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
 meanStepsC <- mean(stepCountDayC$steps)
 medianStepsC <- median(stepCountDayC$steps)
 ```
 
-The new mean of the steps taken each day is: `r meanStepsC`.
-And the new median: `r medianStepsC`.
+The new mean of the steps taken each day is: 1.0766189\times 10^{4}.
+And the new median: 1.0766189\times 10^{4}.
 
-To find the impact we compare the old mean (`r meanSteps`) and median (`r medianSteps`) 
+To find the impact we compare the old mean (1.0766189\times 10^{4}) and median (10765) 
 to the new values. This shows that because we took the averages of an already 
 cleaned dataset to fill in NA values, the mean has not changed. The median 
 however has increased.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 fulldata$wdType <- ifelse(as.POSIXlt(fulldata$date, origin = "1970-01-01")$wday %in% c(6, 7), "weekend", "weekday" )
 stepAvgIntDaytype <- aggregate(steps~interval+wdType, fulldata, mean)
 
@@ -109,3 +132,5 @@ ggplot(stepAvgIntDaytype,
   ylab("Average no. of steps") +
   xlab("5-minute interval")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
